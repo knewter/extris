@@ -9,12 +9,19 @@ defmodule Extris.Window do
   @title 'ExTris'
   @side 25.0
 
+  @left 10
+  @right 11
+
   require Record
   Record.defrecordp :wx, Record.extract(:wx, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxClose, Record.extract(:wxClose, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxCommand, Record.extract(:wxCommand, from_lib: "wx/include/wx.hrl")
 
   alias Extris.Shapes
+
+  defmodule State do
+    defstruct shape: :ell, rotation: 0
+  end
 
   def start(config) do
     do_init(config)
@@ -33,8 +40,10 @@ defmodule Extris.Window do
     canvas = :wxPanel.new(panel, style: :wx_const.wx_full_repaint_on_resize, size: {300,300})
     :wxPanel.connect(canvas, :paint, [:callback])
     :wxSizer.add(sizer, canvas, flag: :wx_const.wx_expand, proportion: 1)
-    one = :wxButton.new(frame, 10, label: '1')
-    :wxSizer.add(main_sizer, one)
+    left = :wxButton.new(frame, @left, label: 'Rotate Left')
+    right = :wxButton.new(frame, @right, label: 'Rotate Right')
+    :wxSizer.add(main_sizer, left)
+    :wxSizer.add(main_sizer, right)
     :wxSizer.add(main_sizer, sizer)
     :wxSizer.add(main_sizer, sizer, flag: :wx_const.wx_expand, proportion: 1)
 
@@ -44,31 +53,44 @@ defmodule Extris.Window do
     :wxFrame.connect(frame, :command_button_clicked)
 
     :wxFrame.show(frame)
-    loop(frame)
+    loop(%State{}, frame)
     :wxFrame.destroy(frame)
   end
 
-  def loop(panel) do
-    draw(panel)
+  def loop(state, panel) do
+    draw(state, panel)
     receive do
       wx(event: wxClose()) ->
         IO.puts "close_window received"
+      wx(id: @left, event: wxCommand(type: :command_button_clicked)) ->
+        state = %State{state | rotation: rem(state.rotation - 1, 4)}
+        loop(state, panel)
+      wx(id: @right, event: wxCommand(type: :command_button_clicked)) ->
+        state = %State{state | rotation: rem(state.rotation + 1, 4)}
+        loop(state, panel)
       event ->
         IO.inspect(event)
         IO.puts "Message received"
-        loop(panel)
+        loop(state, panel)
     end
   end
 
-  def draw(panel) do
+  def draw(state, panel) do
     dc = :wxPaintDC.new(panel)
-    do_draw(dc)
+    :wxPaintDC.clear(dc)
+    do_draw(state, dc)
     :wxPaintDC.destroy(dc)
   end
 
-  def do_draw(dc) do
+  def do_draw(state, dc) do
     IO.puts "do_draw"
-    draw_shapes(dc)
+    #draw_shapes(dc)
+    rotation = state.rotation
+    shape = Shapes.shapes[state.shape]
+    pen = :wx_const.wx_black_pen
+    canvas = :wxGraphicsContext.create(dc)
+    :wxGraphicsContext.setPen(canvas, pen)
+    draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), 3, 3)
 
     IO.puts "done do_draw"
   end
@@ -83,21 +105,16 @@ defmodule Extris.Window do
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
-    IO.inspect 1
     Enum.each(Enum.with_index(Shapes.shapes), fn({{name, shape}, i}) ->
       shape = Enum.at(shape, rotation)
-      draw_colored_shape(canvas, name, shape, 1 + 3*i, 2*y)
-      IO.inspect 3
+      draw_colored_shape(canvas, name, shape, 1 + 5*i, 2*y)
     end)
   end
 
   def draw_shape(canvas, shape, x, y) do
-    IO.inspect shape
     # Specify position in 'grid units'
     for {row, row_i} <- Enum.with_index(shape) do
       for {col, col_i} <- Enum.with_index(row) do
-        IO.inspect row
-        IO.inspect col
         if(col == 1) do
           draw_square(canvas, x + col_i , y + row_i)
         end
