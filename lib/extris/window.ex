@@ -68,26 +68,33 @@ defmodule Extris.Window do
 
   def do_draw(dc) do
     IO.puts "do_draw"
-    draw_ell(dc)
+    draw_shapes(dc)
 
     IO.puts "done do_draw"
   end
 
-  def draw_ell(dc) do
+  def draw_shapes(dc) do
+    for r <- (0..3) do
+      y = 1 + 3*r
+      draw_shapes(dc, r, y)
+    end
+  end
+  def draw_shapes(dc, rotation, y) do
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
-    font = :wx_const.wx_italic_font
     :wxGraphicsContext.setPen(canvas, pen)
-    :wxGraphicsContext.setFont(canvas, font, {0, 0, 50})
+    IO.inspect 1
     Enum.each(Enum.with_index(Shapes.shapes), fn({{name, shape}, i}) ->
-      draw_colored_shape(canvas, name, shape, 1 + 3*i, 1 + 3*i)
+      shape = Enum.at(shape, rotation)
+      draw_colored_shape(canvas, name, shape, 1 + 3*i, 2*y)
+      IO.inspect 3
     end)
   end
 
   def draw_shape(canvas, shape, x, y) do
     IO.inspect shape
     # Specify position in 'grid units'
-    for {row, row_i} <- Enum.with_index(shape |> hd) do
+    for {row, row_i} <- Enum.with_index(shape) do
       for {col, col_i} <- Enum.with_index(row) do
         IO.inspect row
         IO.inspect col
