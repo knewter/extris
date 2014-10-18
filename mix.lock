@@ -1,0 +1,1 @@
+%{"encurses": {:git, "git://github.com/jzellner/encurses.git", "5f3b5300fc9a6c084cf4185d1d3441e69abece3e", []}}
