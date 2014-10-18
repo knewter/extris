@@ -7,6 +7,7 @@ defmodule Extris.Window do
   """
 
   @title 'ExTris'
+  @side 50.0
 
   require Record
   Record.defrecordp :wx, Record.extract(:wx, from_lib: "wx/include/wx.hrl")
@@ -65,6 +66,12 @@ defmodule Extris.Window do
 
   def do_draw(dc) do
     IO.puts "do_draw"
+    draw_ell(dc)
+
+    IO.puts "done do_draw"
+  end
+
+  def draw_ell(dc) do
     pen = :wx_const.wx_black_pen
     brush = :wxBrush.new({30, 175, 23, 127})
     canvas = :wxGraphicsContext.create(dc)
@@ -72,12 +79,11 @@ defmodule Extris.Window do
     :wxGraphicsContext.setPen(canvas, pen)
     :wxGraphicsContext.setBrush(canvas, brush)
     :wxGraphicsContext.setFont(canvas, font, {0, 0, 50})
-    :wxGraphicsContext.drawRoundedRectangle(canvas, 35.0, 35.0, 100.0, 50.0, 10.0)
-    path = :wxGraphicsContext.createPath(canvas)
-    :wxGraphicsPath.addCircle(path, 0.0, 0.0, 40.0)
-    :wxGraphicsPath.closeSubpath(path)
-    :wxGraphicsContext.translate(canvas, 100.0, 250.0)
+    draw_shape(
+    draw_square(canvas, 35, 35)
+  end
 
-    IO.puts "done do_draw"
+  def draw_square(canvas, x, y) do
+    :wxGraphicsContext.drawRectangle(canvas, x, y, @side, @side)
   end
 end
