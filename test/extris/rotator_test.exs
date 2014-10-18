@@ -1,6 +1,5 @@
 defmodule Extris.RotatorTest do
   use ExUnit.Case
-  alias Extris.Rotator
 
   @ell [
     [1, 0],

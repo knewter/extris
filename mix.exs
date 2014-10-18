@@ -4,7 +4,7 @@ defmodule Extris.Mixfile do
   def project do
     [app: :extris,
      version: "0.0.1",
-     elixir: "~> 1.0.0",
+     elixir: "~> 1.0.0 or ~> 1.1.0-dev",
      deps: deps]
   end
 
