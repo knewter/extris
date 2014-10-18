@@ -14,6 +14,8 @@ defmodule Extris.Window do
   Record.defrecordp :wxClose, Record.extract(:wxClose, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxCommand, Record.extract(:wxCommand, from_lib: "wx/include/wx.hrl")
 
+  alias Extris.Shapes
+
   def start(config) do
     do_init(config)
   end
@@ -79,11 +81,25 @@ defmodule Extris.Window do
     :wxGraphicsContext.setPen(canvas, pen)
     :wxGraphicsContext.setBrush(canvas, brush)
     :wxGraphicsContext.setFont(canvas, font, {0, 0, 50})
-    draw_shape(
-    draw_square(canvas, 35, 35)
+    draw_shape(canvas, Shapes.shapes.ell, 3, 3)
+  end
+
+  def draw_shape(canvas, shape, x, y) do
+    # Specify position in 'grid units'
+    for {row, row_i} <- Enum.with_index(shape |> hd) do
+      for {col, col_i} <- Enum.with_index(row) do
+        IO.inspect row
+        IO.inspect col
+        if(col == 1) do
+          draw_square(canvas, x + col_i , y + row_i)
+        end
+      end
+    end
   end
 
   def draw_square(canvas, x, y) do
-    :wxGraphicsContext.drawRectangle(canvas, x, y, @side, @side)
+    true_x = @side * x
+    true_y = @side * y
+    :wxGraphicsContext.drawRectangle(canvas, true_x, true_y, @side, @side)
   end
 end
