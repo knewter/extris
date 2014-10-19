@@ -16,7 +16,6 @@ defmodule Extris.Window do
   Record.defrecordp :wx, Record.extract(:wx, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxClose, Record.extract(:wxClose, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxCommand, Record.extract(:wxCommand, from_lib: "wx/include/wx.hrl")
-  Record.defrecordp :wxKey, Record.extract(:wxKey, from_lib: "wx/include/wx.hrl")
 
   alias Extris.Shapes
 
@@ -52,41 +51,32 @@ defmodule Extris.Window do
     :wxSizer.layout(main_sizer)
     :wxPanel.connect(frame, :paint, [:callback])
     :wxFrame.connect(frame, :command_button_clicked)
-    for action <- [:key_down, :key_up, :char] do
-      :wxWindow.connect(frame, action)
-    end
 
     :wxFrame.show(frame)
     loop(%State{}, frame)
     :wxFrame.destroy(frame)
   end
 
-  def loop(state, panel) do
-    draw(state, panel)
+  def loop(state, frame) do
+    draw(state, frame)
     receive do
       wx(event: wxClose()) ->
         IO.puts "close_window received"
       wx(id: @left, event: wxCommand(type: :command_button_clicked)) ->
         state = %State{state | rotation: rem(state.rotation - 1, 4)}
-        loop(state, panel)
+        loop(state, frame)
       wx(id: @right, event: wxCommand(type: :command_button_clicked)) ->
         state = %State{state | rotation: rem(state.rotation + 1, 4)}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: 65)) ->
-        state = %State{state | rotation: rem(state.rotation + 1, 4)}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: 68)) ->
-        state = %State{state | rotation: rem(state.rotation - 1, 4)}
-        loop(state, panel)
+        loop(state, frame)
       event ->
         IO.inspect(event)
         IO.puts "Message received"
-        loop(state, panel)
+        loop(state, frame)
     end
   end
 
-  def draw(state, panel) do
-    dc = :wxPaintDC.new(panel)
+  def draw(state, frame) do
+    dc = :wxPaintDC.new(frame)
     :wxPaintDC.clear(dc)
     do_draw(state, dc)
     :wxPaintDC.destroy(dc)
@@ -131,13 +121,4 @@ defmodule Extris.Window do
   def brush_for(:zee), do: :wxBrush.new({255, 17, 17, 255})
   def brush_for(:oh),  do: :wxBrush.new({247, 255, 17, 255})
   def brush_for(:tee), do: :wxBrush.new({100, 255, 17, 255})
-
-  def handle_key(event=wxKey(keyCode: 65), object) do
-    IO.inspect event
-    IO.inspect "key pressed"
-  end
-  def handle_key(event, object) do
-    IO.inspect event
-    IO.inspect "key pressed"
-  end
 end
