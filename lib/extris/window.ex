@@ -93,32 +93,12 @@ defmodule Extris.Window do
   end
 
   def do_draw(state, dc) do
-    IO.puts "do_draw"
-    #draw_shapes(dc)
     rotation = state.rotation
     shape = Shapes.shapes[state.shape]
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
     draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), 3, 3)
-
-    IO.puts "done do_draw"
-  end
-
-  def draw_shapes(dc) do
-    for r <- (0..3) do
-      y = 1 + 3*r
-      draw_shapes(dc, r, y)
-    end
-  end
-  def draw_shapes(dc, rotation, y) do
-    pen = :wx_const.wx_black_pen
-    canvas = :wxGraphicsContext.create(dc)
-    :wxGraphicsContext.setPen(canvas, pen)
-    Enum.each(Enum.with_index(Shapes.shapes), fn({{name, shape}, i}) ->
-      shape = Enum.at(shape, rotation)
-      draw_colored_shape(canvas, name, shape, 1 + 5*i, 2*y)
-    end)
   end
 
   def draw_shape(canvas, shape, x, y) do
@@ -131,6 +111,7 @@ defmodule Extris.Window do
       end
     end
   end
+
   def draw_colored_shape(canvas, brush_name, shape, x, y) do
     brush = brush_for(brush_name)
     :wxGraphicsContext.setBrush(canvas, brush)
