@@ -25,6 +25,7 @@ defmodule Extris.Window do
   end
 
   def start(config) do
+    :random.seed(:erlang.now)
     do_init(config)
   end
 
@@ -57,7 +58,7 @@ defmodule Extris.Window do
     end
 
     :wxFrame.show(frame)
-    loop(%State{}, frame)
+    loop(%State{shape: random_shape}, frame)
     :wxFrame.destroy(frame)
   end
 
@@ -100,7 +101,7 @@ defmodule Extris.Window do
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
-    draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), 3, 3)
+    draw_colored_shape(canvas, state.shape, Enum.at(shape, rotation), 3, 3)
 
     IO.puts "done do_draw"
   end
@@ -158,5 +159,17 @@ defmodule Extris.Window do
   def handle_key(event, object) do
     IO.inspect event
     IO.inspect "key pressed"
+  end
+
+  def random_shape do
+    case :random.uniform(7) do
+      1 -> :ell
+      2 -> :jay
+      3 -> :ess
+      4 -> :zee
+      5 -> :bar
+      6 -> :oh
+      7 -> :tee
+    end
   end
 end
