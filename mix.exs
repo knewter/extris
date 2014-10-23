@@ -29,7 +29,6 @@ defmodule Extris.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:encurses, github: "jzellner/encurses"}
     ]
   end
 end

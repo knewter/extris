@@ -12,6 +12,21 @@ defmodule Extris.Window do
   @left 10
   @right 11
 
+  @a 65
+  @d 68
+  @right_arrow 316
+  @left_arrow 314
+  @up_arrow 315
+
+  @board_size %{
+    x: 10,
+    y: 20
+  }
+
+  @fall_speed 0.7
+
+  @interval 500
+
   require Record
   Record.defrecordp :wx, Record.extract(:wx, from_lib: "wx/include/wx.hrl")
   Record.defrecordp :wxClose, Record.extract(:wxClose, from_lib: "wx/include/wx.hrl")
@@ -21,7 +36,7 @@ defmodule Extris.Window do
   alias Extris.Shapes
 
   defmodule State do
-    defstruct shape: :ell, rotation: 0
+    defstruct shape: :ell, rotation: 0, x: 5, y: 0
   end
 
   def start(config) do
@@ -34,11 +49,11 @@ defmodule Extris.Window do
 
   def do_init(_config) do
     wx = :wx.new
-    frame = :wxFrame.new(wx, -1, @title)
+    frame = :wxFrame.new(wx, -1, @title, size: {1000,1000})
     panel = :wxPanel.new(frame)
     main_sizer = :wxBoxSizer.new(:wx_const.wx_vertical)
     sizer = :wxStaticBoxSizer.new(:wx_const.wx_vertical, panel, label: "Extris")
-    canvas = :wxPanel.new(panel, style: :wx_const.wx_full_repaint_on_resize, size: {300,300})
+    canvas = :wxPanel.new(panel, style: :wx_const.wx_full_repaint_on_resize, size: {1000,1000})
     :wxPanel.connect(canvas, :paint, [:callback])
     :wxSizer.add(sizer, canvas, flag: :wx_const.wx_expand, proportion: 1)
     left = :wxButton.new(frame, @left, label: 'Rotate Left')
@@ -57,6 +72,7 @@ defmodule Extris.Window do
     end
 
     :wxFrame.show(frame)
+    :timer.send_interval(@interval, self, :tick)
     loop(%State{}, frame)
     :wxFrame.destroy(frame)
   end
@@ -72,11 +88,23 @@ defmodule Extris.Window do
       wx(id: @right, event: wxCommand(type: :command_button_clicked)) ->
         state = %State{state | rotation: rem(state.rotation + 1, 4)}
         loop(state, panel)
-      wx(event: wxKey(keyCode: 65)) ->
+      wx(event: wxKey(keyCode: @a)) ->
         state = %State{state | rotation: rem(state.rotation + 1, 4)}
         loop(state, panel)
-      wx(event: wxKey(keyCode: 68)) ->
+      wx(event: wxKey(keyCode: @d)) ->
         state = %State{state | rotation: rem(state.rotation - 1, 4)}
+        loop(state, panel)
+      wx(event: wxKey(keyCode: @right_arrow)) ->
+        state = %State{state | x: state.x + 1}
+        loop(state, panel)
+      wx(event: wxKey(keyCode: @left_arrow)) ->
+        state = %State{state | x: state.x - 1}
+        loop(state, panel)
+      wx(event: wxKey(keyCode: @up_arrow)) ->
+        state = %State{state | rotation: rem(state.rotation + 1, 4)}
+        loop(state, panel)
+      :tick ->
+        state = tick_game(state)
         loop(state, panel)
       event ->
         IO.inspect(event)
@@ -100,7 +128,8 @@ defmodule Extris.Window do
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
-    draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), 3, 3)
+    draw_board(canvas)
+    draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), state.x, state.y)
 
     IO.puts "done do_draw"
   end
@@ -121,42 +150,49 @@ defmodule Extris.Window do
     end)
   end
 
-  def draw_shape(canvas, shape, x, y) do
+  def draw_shape(canvas, shape, x, y, brush) do
     # Specify position in 'grid units'
     for {row, row_i} <- Enum.with_index(shape) do
       for {col, col_i} <- Enum.with_index(row) do
         if(col == 1) do
-          draw_square(canvas, x + col_i , y + row_i)
+          draw_square(canvas, x + col_i , y + row_i, brush)
         end
       end
     end
   end
   def draw_colored_shape(canvas, brush_name, shape, x, y) do
     brush = brush_for(brush_name)
-    :wxGraphicsContext.setBrush(canvas, brush)
-    draw_shape(canvas, shape, x, y)
+    draw_shape(canvas, shape, x, y, brush)
   end
 
-  def draw_square(canvas, x, y) do
+  def draw_square(canvas, x, y, brush) do
+    :wxGraphicsContext.setBrush(canvas, brush)
     true_x = @side * x
     true_y = @side * y
     :wxGraphicsContext.drawRectangle(canvas, true_x, true_y, @side, @side)
   end
 
-  def brush_for(:bar), do: :wxBrush.new({0, 240, 255, 255})
-  def brush_for(:jay), do: :wxBrush.new({12, 0, 255, 255})
-  def brush_for(:ell), do: :wxBrush.new({255, 150, 0, 255})
-  def brush_for(:ess), do: :wxBrush.new({5, 231, 5, 255})
-  def brush_for(:zee), do: :wxBrush.new({255, 17, 17, 255})
-  def brush_for(:oh),  do: :wxBrush.new({247, 255, 17, 255})
-  def brush_for(:tee), do: :wxBrush.new({100, 255, 17, 255})
+  def brush_for(:bar),   do: :wxBrush.new({0, 240, 255, 255})
+  def brush_for(:jay),   do: :wxBrush.new({12, 0, 255, 255})
+  def brush_for(:ell),   do: :wxBrush.new({255, 150, 0, 255})
+  def brush_for(:ess),   do: :wxBrush.new({5, 231, 5, 255})
+  def brush_for(:zee),   do: :wxBrush.new({255, 17, 17, 255})
+  def brush_for(:oh),    do: :wxBrush.new({247, 255, 17, 255})
+  def brush_for(:tee),   do: :wxBrush.new({100, 255, 17, 255})
+  def brush_for(:board), do: :wxBrush.new({0, 0, 0, 255})
 
-  def handle_key(event=wxKey(keyCode: 65), object) do
-    IO.inspect event
-    IO.inspect "key pressed"
+  def draw_board(canvas) do
+    brush = brush_for(:board)
+    for x <- (0..@board_size.x) do
+      draw_square(canvas, x, @board_size.y, brush)
+    end
+    for y <- (0..@board_size.y) do
+      draw_square(canvas, 0, y, brush)
+      draw_square(canvas, @board_size.x, y, brush)
+    end
   end
-  def handle_key(event, object) do
-    IO.inspect event
-    IO.inspect "key pressed"
+
+  def tick_game(state) do
+    %State{state|y: state.y + 1}
   end
 end
