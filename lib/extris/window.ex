@@ -40,6 +40,7 @@ defmodule Extris.Window do
   end
 
   def start(config) do
+    :random.seed(:erlang.now)
     do_init(config)
   end
 
@@ -73,7 +74,7 @@ defmodule Extris.Window do
 
     :wxFrame.show(frame)
     :timer.send_interval(@interval, self, :tick)
-    loop(%State{}, frame)
+    loop(%State{shape: random_shape}, frame)
     :wxFrame.destroy(frame)
   end
 
@@ -132,7 +133,7 @@ defmodule Extris.Window do
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
     draw_board(canvas)
-    draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), state.x, state.y)
+    draw_colored_shape(canvas, state.shape, Enum.at(shape, rotation), state.x, state.y)
   end
 
   def draw_shapes(dc) do
@@ -196,5 +197,17 @@ defmodule Extris.Window do
 
   def tick_game(state) do
     %State{state|y: state.y + 1}
+  end
+
+  def random_shape do
+    case :random.uniform(7) do
+      1 -> :ell
+      2 -> :jay
+      3 -> :ess
+      4 -> :zee
+      5 -> :bar
+      6 -> :oh
+      7 -> :tee
+    end
   end
 end
