@@ -82,35 +82,39 @@ defmodule Extris.Window do
     receive do
       wx(event: wxClose()) ->
         IO.puts "close_window received"
-      wx(id: @left, event: wxCommand(type: :command_button_clicked)) ->
-        state = %State{state | rotation: rem(state.rotation - 1, 4)}
-        loop(state, panel)
-      wx(id: @right, event: wxCommand(type: :command_button_clicked)) ->
-        state = %State{state | rotation: rem(state.rotation + 1, 4)}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: @a)) ->
-        state = %State{state | rotation: rem(state.rotation + 1, 4)}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: @d)) ->
-        state = %State{state | rotation: rem(state.rotation - 1, 4)}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: @right_arrow)) ->
-        state = %State{state | x: state.x + 1}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: @left_arrow)) ->
-        state = %State{state | x: state.x - 1}
-        loop(state, panel)
-      wx(event: wxKey(keyCode: @up_arrow)) ->
-        state = %State{state | rotation: rem(state.rotation + 1, 4)}
-        loop(state, panel)
       :tick ->
         state = tick_game(state)
+        loop(state, panel)
+      other_event = wx() ->
+        state = handle_input(state, other_event)
         loop(state, panel)
       event ->
         IO.inspect(event)
         IO.puts "Message received"
         loop(state, panel)
     end
+  end
+
+  def handle_input(state, wx(id: @left, event: wxCommand(type: :command_button_clicked))) do
+    %State{state | rotation: rem(state.rotation - 1, 4)}
+  end
+  def handle_input(state, wx(id: @right, event: wxCommand(type: :command_button_clicked))) do
+    %State{state | rotation: rem(state.rotation + 1, 4)}
+  end
+  def handle_input(state, wx(event: wxKey(keyCode: @a))) do
+    %State{state | rotation: rem(state.rotation + 1, 4)}
+  end
+  def handle_input(state, wx(event: wxKey(keyCode: @d))) do
+    %State{state | rotation: rem(state.rotation - 1, 4)}
+  end
+  def handle_input(state, wx(event: wxKey(keyCode: @right_arrow))) do
+    %State{state | x: state.x + 1}
+  end
+  def handle_input(state, wx(event: wxKey(keyCode: @left_arrow))) do
+    %State{state | x: state.x - 1}
+  end
+  def handle_input(state, wx(event: wxKey(keyCode: @up_arrow))) do
+    %State{state | rotation: rem(state.rotation + 1, 4)}
   end
 
   def draw(state, panel) do
@@ -121,7 +125,6 @@ defmodule Extris.Window do
   end
 
   def do_draw(state, dc) do
-    IO.puts "do_draw"
     #draw_shapes(dc)
     rotation = state.rotation
     shape = Shapes.shapes[state.shape]
@@ -130,8 +133,6 @@ defmodule Extris.Window do
     :wxGraphicsContext.setPen(canvas, pen)
     draw_board(canvas)
     draw_colored_shape(canvas, :ell, Enum.at(shape, rotation), state.x, state.y)
-
-    IO.puts "done do_draw"
   end
 
   def draw_shapes(dc) do
@@ -160,6 +161,7 @@ defmodule Extris.Window do
       end
     end
   end
+
   def draw_colored_shape(canvas, brush_name, shape, x, y) do
     brush = brush_for(brush_name)
     draw_shape(canvas, shape, x, y, brush)
