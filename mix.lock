@@ -1,1 +1,2 @@
-%{"encurses": {:git, "git://github.com/jzellner/encurses.git", "5f3b5300fc9a6c084cf4185d1d3441e69abece3e", []}}
+%{"encurses": {:git, "git://github.com/jzellner/encurses.git", "5f3b5300fc9a6c084cf4185d1d3441e69abece3e", []},
+  "esdl2": {:git, "git://github.com/ninenines/esdl2.git", "ffd1173d7c70c57c3d184f4542e592f56030b259", []}}
