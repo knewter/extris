@@ -2,6 +2,7 @@ defmodule Extris.Game do
   alias Extris.Shapes
   alias Extris.Interaction
   alias Extris.Game.State
+  alias Extris.Shapes
 
   use Extris.WxImports
 
@@ -111,6 +112,11 @@ defmodule Extris.Game do
   end
 
   def tick_game(state) do
-    %State{state|y: state.y + 1}
+    cond do
+      Shapes.height(state.shape, state.rotation) + state.y > 19 ->
+        %State{state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random}
+      true ->
+        %State{state | y: state.y + 1}
+    end
   end
 end
