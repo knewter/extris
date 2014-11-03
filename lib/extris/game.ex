@@ -6,14 +6,11 @@ defmodule Extris.Game do
   use Extris.WxImports
 
   @side 25.0
-
   @board_size %{
     x: 10,
     y: 20
   }
-
   @fall_speed 0.7
-
 
   def loop(state, panel) do
     draw(state, panel)
