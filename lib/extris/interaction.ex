@@ -1,6 +1,7 @@
 defmodule Extris.Interaction do
   use Extris.WxImports
   alias Extris.Game.State
+  alias Extris.Shapes
 
   @left 10
   @right 11
@@ -11,25 +12,41 @@ defmodule Extris.Interaction do
   @left_arrow 314
   @up_arrow 315
 
-  def handle_input(state, wx(id: @left, event: wxCommand(type: :command_button_clicked))) do
+  def handle_input(original_state, event) do
+    new_state = do_handle_input(original_state, event)
+    cond do
+      valid?(new_state) -> new_state
+      true -> original_state
+    end
+  end
+
+  def do_handle_input(state, wx(id: @left, event: wxCommand(type: :command_button_clicked))) do
     %State{state | rotation: rem(state.rotation - 1, 4)}
   end
-  def handle_input(state, wx(id: @right, event: wxCommand(type: :command_button_clicked))) do
+  def do_handle_input(state, wx(id: @right, event: wxCommand(type: :command_button_clicked))) do
     %State{state | rotation: rem(state.rotation + 1, 4)}
   end
-  def handle_input(state, wx(event: wxKey(keyCode: @a))) do
+  def do_handle_input(state, wx(event: wxKey(keyCode: @a))) do
     %State{state | rotation: rem(state.rotation + 1, 4)}
   end
-  def handle_input(state, wx(event: wxKey(keyCode: @d))) do
+  def do_handle_input(state, wx(event: wxKey(keyCode: @d))) do
     %State{state | rotation: rem(state.rotation - 1, 4)}
   end
-  def handle_input(state, wx(event: wxKey(keyCode: @right_arrow))) do
+  def do_handle_input(state, wx(event: wxKey(keyCode: @right_arrow))) do
     %State{state | x: state.x + 1}
   end
-  def handle_input(state, wx(event: wxKey(keyCode: @left_arrow))) do
+  def do_handle_input(state, wx(event: wxKey(keyCode: @left_arrow))) do
     %State{state | x: state.x - 1}
   end
-  def handle_input(state, wx(event: wxKey(keyCode: @up_arrow))) do
+  def do_handle_input(state, wx(event: wxKey(keyCode: @up_arrow))) do
     %State{state | rotation: rem(state.rotation + 1, 4)}
   end
+  def do_handle_input(state, _), do: state
+
+  defp valid?(%State{x: x}) when x < 1, do: false
+  defp valid?(state) do
+    width = Shapes.width(state.shape, state.rotation)
+    state.x + width < 11
+  end
+  defp valid?(state), do: true
 end
