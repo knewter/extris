@@ -15,6 +15,7 @@ defmodule Extris.Window do
 
   use Extris.WxImports
   alias Extris.Game.State
+  alias Extris.Shapes
 
   def start(config) do
     :random.seed(:erlang.now)
@@ -51,19 +52,7 @@ defmodule Extris.Window do
 
     :wxFrame.show(frame)
     :timer.send_interval(@interval, self, :tick)
-    Extris.Game.loop(%State{shape: random_shape}, frame)
+    Extris.Game.loop(%State{shape: Shapes.random, next_shape: Shapes.random}, frame)
     :wxFrame.destroy(frame)
-  end
-
-  defp random_shape do
-    case :random.uniform(7) do
-      1 -> :ell
-      2 -> :jay
-      3 -> :ess
-      4 -> :zee
-      5 -> :bar
-      6 -> :oh
-      7 -> :tee
-    end
   end
 end

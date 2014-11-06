@@ -54,4 +54,22 @@ defmodule Extris.Shapes do
     |> hd
     |> length
   end
+
+  def height(shape, rotation) do
+    shapes[shape]
+    |> Enum.at(rotation)
+    |> length
+  end
+
+  def random do
+    case :random.uniform(7) do
+      1 -> :ell
+      2 -> :jay
+      3 -> :ess
+      4 -> :zee
+      5 -> :bar
+      6 -> :oh
+      7 -> :tee
+    end
+  end
 end
