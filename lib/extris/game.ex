@@ -50,6 +50,10 @@ defmodule Extris.Game do
     {:reply, state, state}
   end
 
+  def handle_info(:tick, state) do
+    {:noreply, tick_game(state)}
+  end
+
   def tick_game(state) do
     cond do
       Shapes.height(state.shape, state.rotation) + state.y > 19 ->

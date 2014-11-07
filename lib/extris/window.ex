@@ -11,7 +11,8 @@ defmodule Extris.Window do
   @left 10
   @right 11
 
-  @interval 500
+  @game_interval 500
+  @refresh_interval 100
 
   use Extris.WxImports
   alias Extris.Game
@@ -51,7 +52,8 @@ defmodule Extris.Window do
 
     :wxFrame.show(frame)
     {:ok, game} = Game.start_link
-    :timer.send_interval(@interval, self, :tick)
+    :timer.send_interval(@refresh_interval, self, :tick)
+    :timer.send_interval(@game_interval, game, :tick)
     loop(game, frame)
     :wxFrame.destroy(frame)
   end
@@ -64,7 +66,6 @@ defmodule Extris.Window do
         Game.stop(game)
         IO.puts "close_window received"
       :tick ->
-        Game.tick(game)
         loop(game, panel)
       other_event = wx() ->
         Game.handle_input(game, other_event)
