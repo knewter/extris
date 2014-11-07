@@ -14,8 +14,7 @@ defmodule Extris.Window do
   @interval 500
 
   use Extris.WxImports
-  alias Extris.Game.State
-  alias Extris.Shapes
+  alias Extris.Game
 
   def start(config) do
     :random.seed(:erlang.now)
@@ -51,8 +50,29 @@ defmodule Extris.Window do
     end
 
     :wxFrame.show(frame)
+    {:ok, game} = Game.start_link
     :timer.send_interval(@interval, self, :tick)
-    Extris.Game.loop(%State{shape: Shapes.random, next_shape: Shapes.random}, frame)
+    loop(game, frame)
     :wxFrame.destroy(frame)
+  end
+
+  def loop(game, panel) do
+    state = Game.get_state(game)
+    Extris.Wx.Renderer.draw(state, panel)
+    receive do
+      wx(event: wxClose()) ->
+        Game.stop(game)
+        IO.puts "close_window received"
+      :tick ->
+        Game.tick(game)
+        loop(game, panel)
+      other_event = wx() ->
+        Game.handle_input(game, other_event)
+        loop(game, panel)
+      event ->
+        IO.inspect(event)
+        IO.puts "Message received"
+        loop(state, panel)
+    end
   end
 end
