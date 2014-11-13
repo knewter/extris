@@ -72,14 +72,22 @@ defmodule Extris.Shapes do
   end
 
   def random do
-    case :random.uniform(7) do
-      1 -> :ell
-      2 -> :jay
-      3 -> :ess
-      4 -> :zee
-      5 -> :bar
-      6 -> :oh
-      7 -> :tee
-    end
+    by_number(:random.uniform(7))
   end
+
+  def by_number(1), do: :ell
+  def by_number(2), do: :jay
+  def by_number(3), do: :ess
+  def by_number(4), do: :zee
+  def by_number(5), do: :bar
+  def by_number(6), do: :oh
+  def by_number(7), do: :tee
+
+  def number(:ell), do: 1
+  def number(:jay), do: 2
+  def number(:ess), do: 3
+  def number(:zee), do: 4
+  def number(:bar), do: 5
+  def number(:oh),  do: 6
+  def number(:tee), do: 7
 end

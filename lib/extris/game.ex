@@ -47,7 +47,8 @@ defmodule Extris.Game do
   end
 
   def handle_call(:get_state, _from, state) do
-    {:reply, state, state}
+    state_with_overlaid_shape = overlay_shape(state)
+    {:reply, state_with_overlaid_shape, state}
   end
 
   def handle_info(:tick, state) do
@@ -61,5 +62,37 @@ defmodule Extris.Game do
       true ->
         %State{state | y: state.y + 1}
     end
+  end
+
+  def overlay_shape(state) do
+    shape = Shapes.shapes[state.shape]
+    rotated_shape = shape |> Enum.at(state.rotation)
+    width = Shapes.width(rotated_shape)
+    height = Shapes.height(rotated_shape)
+    new_board = for {row, row_i} <- Enum.with_index(state.board) do
+      for {col, col_i} <- Enum.with_index(row) do
+        rotated_shape_overlaps_cell = row_i >= state.y && row_i < state.y + height &&
+                                      col_i >= state.x && col_i < state.x + width
+        cond do
+          # 0 in a shape is "transparent", and the shape is overlapping
+          # with this col/row
+          rotated_shape_overlaps_cell ->
+            data_in_shape_cell = rotated_shape
+                                 |> Enum.at(row_i - state.y)
+                                 |> Enum.at(col_i - state.x)
+            case data_in_shape_cell do
+              0 -> state.board
+                   |> Enum.at(row_i)
+                   |> Enum.at(col_i)
+              data -> data
+            end
+          true ->
+            state.board
+            |> Enum.at(row_i)
+            |> Enum.at(col_i)
+        end
+      end
+    end
+    %State{state|board: new_board}
   end
 end
