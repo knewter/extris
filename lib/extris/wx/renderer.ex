@@ -21,7 +21,7 @@ defmodule Extris.Wx.Renderer do
     pen = :wx_const.wx_black_pen
     canvas = :wxGraphicsContext.create(dc)
     :wxGraphicsContext.setPen(canvas, pen)
-    draw_board(canvas)
+    draw_board(canvas, state)
     draw_colored_shape(canvas, state.shape, Enum.at(shape, rotation), state.x, state.y)
   end
 
@@ -57,14 +57,16 @@ defmodule Extris.Wx.Renderer do
   def brush_for(:tee),   do: :wxBrush.new({100, 255, 17, 255})
   def brush_for(:board), do: :wxBrush.new({0, 0, 0, 255})
 
-  def draw_board(canvas) do
+  def draw_board(canvas, state) do
     brush = brush_for(:board)
-    for x <- (0..@board_size.x) do
-      draw_square(canvas, x, @board_size.y, brush)
+    board_width = Shapes.width(state.board)
+    board_height = Shapes.height(state.board)
+    for x <- (0..board_width) do
+      draw_square(canvas, x, board_height, brush)
     end
-    for y <- (0..@board_size.y) do
+    for y <- (0..board_height) do
       draw_square(canvas, 0, y, brush)
-      draw_square(canvas, @board_size.x, y, brush)
+      draw_square(canvas, board_width, y, brush)
     end
   end
 end

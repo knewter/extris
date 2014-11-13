@@ -51,13 +51,23 @@ defmodule Extris.Shapes do
   def width(shape, rotation) do
     shapes[shape]
     |> Enum.at(rotation)
-    |> hd
-    |> length
+    |> width
   end
 
   def height(shape, rotation) do
     shapes[shape]
     |> Enum.at(rotation)
+    |> height
+  end
+
+  def width(shape) do
+    shape
+    |> hd
+    |> length
+  end
+
+  def height(shape) do
+    shape
     |> length
   end
 
