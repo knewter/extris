@@ -84,7 +84,7 @@ defmodule Extris.Game do
               0 -> state.board
                    |> Enum.at(row_i)
                    |> Enum.at(col_i)
-              data -> data
+              data -> Shapes.number(state.shape)
             end
           true ->
             state.board

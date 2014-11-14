@@ -12,7 +12,7 @@ defmodule Extris.Window do
   @right 11
 
   @game_interval 500
-  @refresh_interval 100
+  @refresh_interval 50
 
   use Extris.WxImports
   alias Extris.Game
@@ -60,12 +60,12 @@ defmodule Extris.Window do
 
   def loop(game, panel) do
     state = Game.get_state(game)
-    Extris.Wx.Renderer.draw(state, panel)
     receive do
       wx(event: wxClose()) ->
         Game.stop(game)
         IO.puts "close_window received"
       :tick ->
+        Extris.Wx.Renderer.draw(state, panel)
         loop(game, panel)
       other_event = wx() ->
         Game.handle_input(game, other_event)

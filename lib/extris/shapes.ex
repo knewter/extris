@@ -43,7 +43,7 @@ defmodule Extris.Shapes do
     zee: [@zee, rotate(@zee, 90), rotate(@zee, 180), rotate(@zee, 270)],
     bar: [@bar, rotate(@bar, 90), rotate(@bar, 180), rotate(@bar, 270)],
     oh:  [@oh,  rotate(@oh, 90),  rotate(@oh, 180),  rotate(@oh, 270)],
-    tee: [@tee,  rotate(@tee, 90),  rotate(@tee, 180),  rotate(@tee, 270)],
+    tee: [@tee, rotate(@tee, 90), rotate(@tee, 180), rotate(@tee, 270)],
   }
 
   def shapes, do: @shapes

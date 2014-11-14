@@ -18,17 +18,6 @@ defmodule Extris.Wx.Renderer do
     draw_board(canvas, state)
   end
 
-  def draw_shape(canvas, shape, x, y, brush) do
-    # Specify position in 'grid units'
-    for {row, row_i} <- Enum.with_index(shape) do
-      for {col, col_i} <- Enum.with_index(row) do
-        if(col == 1) do
-          draw_square(canvas, x + col_i , y + row_i, brush)
-        end
-      end
-    end
-  end
-
   def draw_square(canvas, x, y, brush) do
     :wxGraphicsContext.setBrush(canvas, brush)
     true_x = @side * x
@@ -51,7 +40,7 @@ defmodule Extris.Wx.Renderer do
       for {col, col_i} <- Enum.with_index(row) do
         case col do
           0 -> true
-          n -> draw_square(canvas, col_i, row_i, brush_for(state.shape))
+          n -> draw_square(canvas, col_i, row_i, brush_for(Shapes.by_number(n)))
         end
       end
     end
