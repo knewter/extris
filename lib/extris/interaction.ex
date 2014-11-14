@@ -48,7 +48,6 @@ defmodule Extris.Interaction do
     !past_right_side_of_board?(state) &&
     !collision_with_board?(state)
   end
-  defp valid?(state), do: true
 
   def collision_with_board?(state) do
     Enum.any?(State.cells_for_shape(state), fn(coords) ->
