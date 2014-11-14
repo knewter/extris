@@ -12,7 +12,7 @@ defmodule Extris.Window do
   @right 11
 
   @game_interval 500
-  @refresh_interval 50
+  @refresh_interval 100
 
   use Extris.WxImports
   alias Extris.Game

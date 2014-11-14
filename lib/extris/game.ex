@@ -57,39 +57,32 @@ defmodule Extris.Game do
 
   def tick_game(state) do
     cond do
-      Shapes.height(state.shape, state.rotation) + state.y > 19 ->
-        %State{shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random}
+      collision_with_bottom?(state) || collision_with_board?(state) ->
+        new_state = overlay_shape(state)
+        %State{new_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
       true ->
         %State{state | y: state.y + 1}
     end
   end
 
+  def collision_with_bottom?(state) do
+    Shapes.height(state.shape, state.rotation) + state.y > 19
+  end
+
+  def collision_with_board?(state) do
+    next_coords = for {x, y} <- State.cells_for_shape(state), do: {x, y+1}
+    Enum.any?(next_coords, fn(coords) ->
+      State.cell_at(state, coords) != 0
+    end)
+  end
+
   def overlay_shape(state) do
-    shape = Shapes.shapes[state.shape]
-    rotated_shape = shape |> Enum.at(state.rotation)
-    width = Shapes.width(rotated_shape)
-    height = Shapes.height(rotated_shape)
     new_board = for {row, row_i} <- Enum.with_index(state.board) do
       for {col, col_i} <- Enum.with_index(row) do
-        rotated_shape_overlaps_cell = row_i >= state.y && row_i < state.y + height &&
-                                      col_i >= state.x && col_i < state.x + width
+        rotated_shape_overlaps_cell = Enum.member?(State.cells_for_shape(state), {col_i, row_i})
         cond do
-          # 0 in a shape is "transparent", and the shape is overlapping
-          # with this col/row
-          rotated_shape_overlaps_cell ->
-            data_in_shape_cell = rotated_shape
-                                 |> Enum.at(row_i - state.y)
-                                 |> Enum.at(col_i - state.x)
-            case data_in_shape_cell do
-              0 -> state.board
-                   |> Enum.at(row_i)
-                   |> Enum.at(col_i)
-              data -> Shapes.number(state.shape)
-            end
-          true ->
-            state.board
-            |> Enum.at(row_i)
-            |> Enum.at(col_i)
+          rotated_shape_overlaps_cell -> Shapes.number(state.shape)
+          true -> col
         end
       end
     end

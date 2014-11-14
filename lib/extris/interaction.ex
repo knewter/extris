@@ -45,8 +45,19 @@ defmodule Extris.Interaction do
 
   defp valid?(%State{x: x}) when x < 1, do: false
   defp valid?(state) do
-    width = Shapes.width(state.shape, state.rotation)
-    state.x + width < 11
+    !past_right_side_of_board?(state) &&
+    !collision_with_board?(state)
   end
   defp valid?(state), do: true
+
+  def collision_with_board?(state) do
+    Enum.any?(State.cells_for_shape(state), fn(coords) ->
+      State.cell_at(state, coords) != 0
+    end)
+  end
+
+  def past_right_side_of_board?(state) do
+    width = Shapes.width(state.shape, state.rotation)
+    state.x + width >= 11
+  end
 end
