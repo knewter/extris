@@ -43,7 +43,7 @@ defmodule Extris.Interaction do
   end
   def do_handle_input(state, _), do: state
 
-  defp valid?(%State{x: x}) when x < 1, do: false
+  defp valid?(%State{x: x}) when x < 0, do: false
   defp valid?(state) do
     !past_right_side_of_board?(state) &&
     !collision_with_board?(state)

@@ -58,8 +58,15 @@ defmodule Extris.Game do
   def tick_game(state) do
     cond do
       collision_with_bottom?(state) || collision_with_board?(state) ->
+        IO.puts "collision"
+        IO.inspect state.board
         new_state = overlay_shape(state)
-        %State{new_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
+        IO.puts "overlaid shape"
+        IO.inspect new_state.board
+        cleared_state = State.clear_lines(new_state)
+        IO.puts "cleared state"
+        IO.inspect cleared_state.board
+        %State{cleared_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
       true ->
         %State{state | y: state.y + 1}
     end
