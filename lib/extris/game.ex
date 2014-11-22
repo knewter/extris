@@ -59,7 +59,8 @@ defmodule Extris.Game do
     cond do
       collision_with_bottom?(state) || collision_with_board?(state) ->
         new_state = overlay_shape(state)
-        %State{new_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
+        cleared_state = State.clear_lines(new_state)
+        %State{cleared_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
       true ->
         %State{state | y: state.y + 1}
     end
