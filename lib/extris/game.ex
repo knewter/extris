@@ -1,116 +1,92 @@
 defmodule Extris.Game do
-  alias Extris.Shapes
+  use GenServer
+
   alias Extris.Interaction
   alias Extris.Game.State
+  alias Extris.Shapes
 
-  use Extris.WxImports
+  ## Client API
 
-  @side 25.0
-
-  @board_size %{
-    x: 10,
-    y: 20
-  }
-
-  @fall_speed 0.7
-
-
-  def loop(state, panel) do
-    draw(state, panel)
-    receive do
-      wx(event: wxClose()) ->
-        IO.puts "close_window received"
-      :tick ->
-        state = tick_game(state)
-        loop(state, panel)
-      other_event = wx() ->
-        state = Interaction.handle_input(state, other_event)
-        loop(state, panel)
-      event ->
-        IO.inspect(event)
-        IO.puts "Message received"
-        loop(state, panel)
-    end
+  @doc """
+  Start a game of Extris
+  """
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, :ok, opts)
   end
 
-  def draw(state, panel) do
-    dc = :wxPaintDC.new(panel)
-    :wxPaintDC.clear(dc)
-    do_draw(state, dc)
-    :wxPaintDC.destroy(dc)
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
   end
 
-  def do_draw(state, dc) do
-    #draw_shapes(dc)
-    rotation = state.rotation
-    shape = Shapes.shapes[state.shape]
-    pen = :wx_const.wx_black_pen
-    canvas = :wxGraphicsContext.create(dc)
-    :wxGraphicsContext.setPen(canvas, pen)
-    draw_board(canvas)
-    draw_colored_shape(canvas, state.shape, Enum.at(shape, rotation), state.x, state.y)
+  def tick(pid) do
+    GenServer.cast(pid, :tick)
   end
 
-  def draw_shapes(dc) do
-    for r <- (0..3) do
-      y = 1 + 3*r
-      draw_shapes(dc, r, y)
-    end
-  end
-  def draw_shapes(dc, rotation, y) do
-    pen = :wx_const.wx_black_pen
-    canvas = :wxGraphicsContext.create(dc)
-    :wxGraphicsContext.setPen(canvas, pen)
-    Enum.each(Enum.with_index(Shapes.shapes), fn({{name, shape}, i}) ->
-      shape = Enum.at(shape, rotation)
-      draw_colored_shape(canvas, name, shape, 1 + 5*i, 2*y)
-    end)
+  def handle_input(pid, input) do
+    GenServer.cast(pid, {:handle_input, input})
   end
 
-  def draw_shape(canvas, shape, x, y, brush) do
-    # Specify position in 'grid units'
-    for {row, row_i} <- Enum.with_index(shape) do
-      for {col, col_i} <- Enum.with_index(row) do
-        if(col == 1) do
-          draw_square(canvas, x + col_i , y + row_i, brush)
-        end
-      end
-    end
+  def get_state(pid) do
+    GenServer.call(pid, :get_state)
   end
 
-  def draw_colored_shape(canvas, brush_name, shape, x, y) do
-    brush = brush_for(brush_name)
-    draw_shape(canvas, shape, x, y, brush)
+  ## Server Callbacks
+
+  def init(:ok) do
+    {:ok, %State{shape: Shapes.random, next_shape: Shapes.random}}
   end
 
-  def draw_square(canvas, x, y, brush) do
-    :wxGraphicsContext.setBrush(canvas, brush)
-    true_x = @side * x
-    true_y = @side * y
-    :wxGraphicsContext.drawRectangle(canvas, true_x, true_y, @side, @side)
+  def handle_cast(:stop, _state) do
+    {:stop, :normal, :shutdown_ok, []}
+  end
+  def handle_cast(:tick, state) do
+    {:noreply, tick_game(state)}
+  end
+  def handle_cast({:handle_input, input}, state) do
+    {:noreply, Interaction.handle_input(state, input)}
   end
 
-  def brush_for(:bar),   do: :wxBrush.new({0, 240, 255, 255})
-  def brush_for(:jay),   do: :wxBrush.new({12, 0, 255, 255})
-  def brush_for(:ell),   do: :wxBrush.new({255, 150, 0, 255})
-  def brush_for(:ess),   do: :wxBrush.new({5, 231, 5, 255})
-  def brush_for(:zee),   do: :wxBrush.new({255, 17, 17, 255})
-  def brush_for(:oh),    do: :wxBrush.new({247, 255, 17, 255})
-  def brush_for(:tee),   do: :wxBrush.new({100, 255, 17, 255})
-  def brush_for(:board), do: :wxBrush.new({0, 0, 0, 255})
+  def handle_call(:get_state, _from, state) do
+    state_with_overlaid_shape = overlay_shape(state)
+    {:reply, state_with_overlaid_shape, state}
+  end
 
-  def draw_board(canvas) do
-    brush = brush_for(:board)
-    for x <- (0..@board_size.x) do
-      draw_square(canvas, x, @board_size.y, brush)
-    end
-    for y <- (0..@board_size.y) do
-      draw_square(canvas, 0, y, brush)
-      draw_square(canvas, @board_size.x, y, brush)
-    end
+  def handle_info(:tick, state) do
+    {:noreply, tick_game(state)}
   end
 
   def tick_game(state) do
-    %State{state|y: state.y + 1}
+    cond do
+      collision_with_bottom?(state) || collision_with_board?(state) ->
+        new_state = overlay_shape(state)
+        cleared_state = State.clear_lines(new_state)
+        %State{cleared_state | shape: state.next_shape, x: 5, y: 0, next_shape: Shapes.random }
+      true ->
+        %State{state | y: state.y + 1}
+    end
+  end
+
+  def collision_with_bottom?(state) do
+    Shapes.height(state.shape, state.rotation) + state.y > 19
+  end
+
+  def collision_with_board?(state) do
+    next_coords = for {x, y} <- State.cells_for_shape(state), do: {x, y+1}
+    Enum.any?(next_coords, fn(coords) ->
+      State.cell_at(state, coords) != 0
+    end)
+  end
+
+  def overlay_shape(state) do
+    new_board = for {row, row_i} <- Enum.with_index(state.board) do
+      for {col, col_i} <- Enum.with_index(row) do
+        rotated_shape_overlaps_cell = Enum.member?(State.cells_for_shape(state), {col_i, row_i})
+        cond do
+          rotated_shape_overlaps_cell -> Shapes.number(state.shape)
+          true -> col
+        end
+      end
+    end
+    %State{state|board: new_board}
   end
 end

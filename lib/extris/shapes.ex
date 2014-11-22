@@ -43,8 +43,51 @@ defmodule Extris.Shapes do
     zee: [@zee, rotate(@zee, 90), rotate(@zee, 180), rotate(@zee, 270)],
     bar: [@bar, rotate(@bar, 90), rotate(@bar, 180), rotate(@bar, 270)],
     oh:  [@oh,  rotate(@oh, 90),  rotate(@oh, 180),  rotate(@oh, 270)],
-    tee: [@tee,  rotate(@tee, 90),  rotate(@tee, 180),  rotate(@tee, 270)],
+    tee: [@tee, rotate(@tee, 90), rotate(@tee, 180), rotate(@tee, 270)],
   }
 
   def shapes, do: @shapes
+
+  def width(shape, rotation) do
+    shapes[shape]
+    |> Enum.at(rotation)
+    |> width
+  end
+
+  def height(shape, rotation) do
+    shapes[shape]
+    |> Enum.at(rotation)
+    |> height
+  end
+
+  def width(shape) do
+    shape
+    |> hd
+    |> length
+  end
+
+  def height(shape) do
+    shape
+    |> length
+  end
+
+  def random do
+    by_number(:random.uniform(7))
+  end
+
+  def by_number(1), do: :ell
+  def by_number(2), do: :jay
+  def by_number(3), do: :ess
+  def by_number(4), do: :zee
+  def by_number(5), do: :bar
+  def by_number(6), do: :oh
+  def by_number(7), do: :tee
+
+  def number(:ell), do: 1
+  def number(:jay), do: 2
+  def number(:ess), do: 3
+  def number(:zee), do: 4
+  def number(:bar), do: 5
+  def number(:oh),  do: 6
+  def number(:tee), do: 7
 end
