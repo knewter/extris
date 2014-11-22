@@ -20,7 +20,7 @@ defmodule Extris.SdlWindow do
   def init(_config) do
     :ok = :sdl.start([:video])
     :ok = :sdl.stop_on_exit()
-    {:ok, window} = :sdl_window.create('Hello SDL', 10, 10, 1000, 1000, [])
+    {:ok, window} = :sdl_window.create(@title, 10, 10, 1000, 1000, [])
     {:ok, renderer} = :sdl_renderer.create(window, -1, [:accelerated, :present_vsync])
     {:ok, game} = Game.start_link
     :timer.send_interval(@refresh_interval, self, :tick)
@@ -30,7 +30,6 @@ defmodule Extris.SdlWindow do
   end
 
   def loop(game, renderer) do
-    IO.puts "loop"
     state = Game.get_state(game)
     case :sdl_events.poll do
       false -> :ok
@@ -40,7 +39,6 @@ defmodule Extris.SdlWindow do
 
     receive do
       :tick ->
-        IO.puts "tick"
         Extris.SDL.Renderer.draw(state, renderer)
         loop(game, renderer)
       event ->

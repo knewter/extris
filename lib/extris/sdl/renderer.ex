@@ -57,7 +57,6 @@ defmodule Extris.SDL.Renderer do
   def brush_for(:board), do: [0, 0, 0, 255]
 
   def set_brush(renderer, brush_type) when is_list(brush_type) do
-    IO.inspect brush_type
     :ok = apply(:sdl_renderer, :set_draw_color, [renderer] ++ brush_type)
   end
   def set_brush(renderer, brush_type) when is_atom(brush_type) do
