@@ -11,22 +11,21 @@ defmodule Extris.Window do
   @left 10
   @right 11
 
-  @game_interval 500
   @refresh_interval 100
 
   use Extris.WxImports
   alias Extris.Game
 
-  def start(config) do
+  def start(game) do
     :random.seed(:erlang.now)
-    do_init(config)
+    do_init(game)
   end
 
-  def init(config) do
-    :wx.batch(fn() -> do_init(config) end)
+  def init(game) do
+    :wx.batch(fn() -> do_init(game) end)
   end
 
-  def do_init(_config) do
+  def do_init(game) do
     wx = :wx.new
     frame = :wxFrame.new(wx, -1, @title, size: {1000,1000})
     panel = :wxPanel.new(frame)
@@ -51,9 +50,7 @@ defmodule Extris.Window do
     end
 
     :wxFrame.show(frame)
-    {:ok, game} = Game.start_link
     :timer.send_interval(@refresh_interval, self, :tick)
-    :timer.send_interval(@game_interval, game, :tick)
     loop(game, frame)
     :wxFrame.destroy(frame)
   end
