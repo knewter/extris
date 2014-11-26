@@ -51,10 +51,6 @@ defmodule Extris.Game do
     {:reply, state_with_overlaid_shape, state}
   end
 
-  def handle_info(:tick, state) do
-    {:noreply, tick_game(state)}
-  end
-
   def tick_game(state) do
     cond do
       collision_with_bottom?(state) || collision_with_board?(state) ->
