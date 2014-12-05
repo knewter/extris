@@ -7,24 +7,21 @@ defmodule Extris.SdlWindow do
 
   @title 'ExTris - SDL'
 
-  @game_interval 500
   @refresh_interval 100
 
   alias Extris.Game
 
-  def start(config) do
+  def start(game) do
     :random.seed(:erlang.now)
-    init(config)
+    init(game)
   end
 
-  def init(_config) do
+  def init(game) do
     :ok = :sdl.start([:video])
     :ok = :sdl.stop_on_exit()
     {:ok, window} = :sdl_window.create(@title, 10, 10, 1000, 1000, [])
     {:ok, renderer} = :sdl_renderer.create(window, -1, [:accelerated, :present_vsync])
-    {:ok, game} = Game.start_link
     :timer.send_interval(@refresh_interval, self, :tick)
-    :timer.send_interval(@game_interval, game, :tick)
     loop(game, renderer)
     :erlang.terminate
   end
