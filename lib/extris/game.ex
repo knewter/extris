@@ -1,7 +1,7 @@
 defmodule Extris.Game do
   use GenServer
 
-  alias Extris.Interaction
+  alias Extris.Game.Interaction
   alias Extris.Game.State
   alias Extris.Shapes
 

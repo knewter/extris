@@ -65,7 +65,7 @@ defmodule Extris.Wx.Window do
         Extris.Wx.Renderer.draw(state, panel)
         loop(game, panel)
       other_event = wx() ->
-        Game.handle_input(game, other_event)
+        Game.handle_input(game, Extris.Wx.Interaction.create_game_event(other_event))
         loop(game, panel)
       event ->
         IO.inspect(event)
