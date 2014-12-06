@@ -50,27 +50,30 @@ defmodule Extris.Wx.Window do
     end
 
     :wxFrame.show(frame)
+    dc = :wxPaintDC.new(frame)
+    canvas = :wxGraphicsContext.create(dc)
     :timer.send_interval(@refresh_interval, self, :tick)
-    loop(game, frame)
+    loop(game, {dc, canvas})
+    :wxPaintDC.destroy(dc)
     :wxFrame.destroy(frame)
   end
 
-  def loop(game, panel) do
+  def loop(game, {dc, canvas}) do
     state = Game.get_state(game)
     receive do
       wx(event: wxClose()) ->
         Game.stop(game)
         IO.puts "close_window received"
       :tick ->
-        Extris.Wx.Renderer.draw(state, panel)
-        loop(game, panel)
+        Extris.Wx.Renderer.draw(state, {dc, canvas})
+        loop(game, {dc, canvas})
       other_event = wx() ->
         Game.handle_input(game, Extris.Wx.Interaction.create_game_event(other_event))
-        loop(game, panel)
+        loop(game, {dc, canvas})
       event ->
         IO.inspect(event)
         IO.puts "Message received"
-        loop(state, panel)
+        loop(state, {dc, canvas})
     end
   end
 end

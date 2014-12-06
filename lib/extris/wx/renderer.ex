@@ -4,15 +4,12 @@ defmodule Extris.Wx.Renderer do
 
   @side 25.0
 
-  def draw(state, panel) do
-    dc = :wxPaintDC.new(panel)
+  def draw(state, {dc, canvas}) do
     :wxPaintDC.clear(dc)
-    do_draw(state, dc)
-    :wxPaintDC.destroy(dc)
+    do_draw(state, canvas)
   end
 
-  def do_draw(state, dc) do
-    canvas = :wxGraphicsContext.create(dc)
+  def do_draw(state, canvas) do
     pen = :wx_const.wx_black_pen
     :wxGraphicsContext.setPen(canvas, pen)
     draw_board(canvas, state)
