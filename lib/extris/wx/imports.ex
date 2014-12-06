@@ -1,4 +1,4 @@
-defmodule Extris.WxImports do
+defmodule Extris.Wx.Imports do
   defmacro __using__(_) do
     quote do
       require Record

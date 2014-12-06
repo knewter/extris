@@ -1,4 +1,4 @@
-defmodule Extris.Window do
+defmodule Extris.Wx.Window do
   @moduledoc """
 
   For now, Window exists to toy with the options I might have for building out
@@ -13,7 +13,7 @@ defmodule Extris.Window do
 
   @refresh_interval 100
 
-  use Extris.WxImports
+  use Extris.Wx.Imports
   alias Extris.Game
 
   def start(game) do

@@ -1,5 +1,5 @@
 defmodule Extris.Wx.Renderer do
-  use Extris.WxImports
+  use Extris.Wx.Imports
   alias Extris.Shapes
 
   @side 25.0

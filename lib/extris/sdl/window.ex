@@ -1,4 +1,4 @@
-defmodule Extris.SdlWindow do
+defmodule Extris.Sdl.Window do
   @moduledoc """
 
   Begin an SDL window to render an Extris game

@@ -1,5 +1,5 @@
 defmodule Extris.Interaction do
-  use Extris.WxImports
+  use Extris.Wx.Imports
   alias Extris.Game.State
   alias Extris.Shapes
 
