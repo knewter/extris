@@ -33,6 +33,7 @@ defmodule Extris.Game do
   ## Server Callbacks
 
   def init(:ok) do
+    :random.seed(:erlang.now)
     {:ok, %State{shape: Shapes.random, next_shape: Shapes.random}}
   end
 
