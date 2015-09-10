@@ -5,7 +5,16 @@ defmodule Extris.Mixfile do
     [app: :extris,
      version: "0.0.1",
      elixir: "~> 1.0.0 or ~> 1.1.0-dev",
-     deps: deps]
+     deps: deps,
+     escript: escript
+   ]
+  end
+
+  defp escript do
+    [
+      main_module: Extris.CLI,
+      emu_args: "-noinput -elixir ansi_enabled true"
+    ]
   end
 
   # Configuration for the OTP application

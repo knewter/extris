@@ -39,15 +39,15 @@ defmodule Extris.TTY.Window do
   end
 
   defp draw_line(line) do
-    [@vert_line, Enum.map(line, &draw_cell/1), @vert_line, "\n"]
+    [@vert_line, Enum.map(line, &draw_cell/1), @vert_line, "\r\n"]
   end
 
   defp top_bar(width) do
-    [@top_left, String.duplicate("#{@mid_bar}#{@mid_bar}", width), @top_right, "\n"]
+    [@top_left, String.duplicate("#{@mid_bar}#{@mid_bar}", width), @top_right, "\r\n"]
   end
 
   defp bottom_bar(width) do
-    [@bottom_left, String.duplicate("#{@mid_bar}#{@mid_bar}", width), @bottom_right, "\n"]
+    [@bottom_left, String.duplicate("#{@mid_bar}#{@mid_bar}", width), @bottom_right, "\r\n"]
   end
 
   defp draw_cell(0), do: "  "

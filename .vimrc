@@ -1,1 +1,1 @@
-map ,. :!iex -S mix<cr>
+map ,. :!mix escript.build && ./extris<cr>
