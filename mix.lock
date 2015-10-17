@@ -1,2 +1,4 @@
-%{"encurses": {:git, "git://github.com/jzellner/encurses.git", "5f3b5300fc9a6c084cf4185d1d3441e69abece3e", []},
-  "esdl2": {:git, "git://github.com/ninenines/esdl2.git", "ffd1173d7c70c57c3d184f4542e592f56030b259", []}}
+%{"dogma": {:git, "git://github.com/lpil/dogma.git", "a1b45a2e32f9576cc1ecf7cb281b806f2025382f", []},
+  "encurses": {:git, "git://github.com/jzellner/encurses.git", "5f3b5300fc9a6c084cf4185d1d3441e69abece3e", []},
+  "esdl2": {:git, "git://github.com/ninenines/esdl2.git", "ffd1173d7c70c57c3d184f4542e592f56030b259", []},
+  "poison": {:hex, :poison, "1.5.0"}}
