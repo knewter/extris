@@ -4,7 +4,7 @@ defmodule Extris.Mixfile do
   def project do
     [app: :extris,
      version: "0.0.1",
-     elixir: "~> 1.0.0 or ~> 1.1.0-dev",
+     elixir: "~> 1.0.0 or ~> 1.2.0 or ~> 1.3.0-dev",
      deps: deps,
      escript: escript
    ]
@@ -38,7 +38,6 @@ defmodule Extris.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:esdl2, github: "ninenines/esdl2"},
       {:dogma, github: "lpil/dogma", only: :dev}
     ]
   end
