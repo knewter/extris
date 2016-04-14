@@ -38,7 +38,7 @@ defmodule Extris.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:esdl2, github: "ninenines/esdl2"},
+      #{:esdl2, github: "ninenines/esdl2"},
       {:dogma, github: "lpil/dogma", only: :dev}
     ]
   end
