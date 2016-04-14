@@ -4,7 +4,7 @@ defmodule Extris.Mixfile do
   def project do
     [app: :extris,
      version: "0.0.1",
-     elixir: "~> 1.0.0 or ~> 1.1.0-dev",
+     elixir: "~> 1.0.0 or ~> 1.2.0 or ~> 1.3.0-dev",
      deps: deps,
      escript: escript
    ]
@@ -22,7 +22,7 @@ defmodule Extris.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [
-      applications: [:logger],
+      applications: [:logger, :sasl],
       mod: { Extris, [] }
     ]
   end
