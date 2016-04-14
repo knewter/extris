@@ -24,17 +24,14 @@ defmodule Extris.OpenGL.Renderer do
   end
 
   def start(config) do
-    IO.puts "starting"
     :wx_object.start_link(__MODULE__, config, [])
   end
 
   def init(config) do
-    IO.puts "interior init"
     :wx.batch(fn() -> do_init(config) end)
   end
 
   def do_init(config) do
-    IO.puts "do_init"
     parent = :proplists.get_value(:parent, config)
     size = :proplists.get_value(:size, config)
     game = :proplists.get_value(:game, config)
@@ -67,9 +64,7 @@ defmodule Extris.OpenGL.Renderer do
     }
 
     new_state = setup_gl(state)
-    IO.puts "after setup_gl"
     timer = :timer.send_interval(20, self, :update)
-    IO.puts "after send_interval"
 
     {parent, %State{ new_state | timer: timer } }
   end
@@ -92,13 +87,21 @@ defmodule Extris.OpenGL.Renderer do
 
     new_state = case key_code do
       ^wxk_up ->
-        %State{ state | xrot: state.xrot - 0.2 }
+        Extris.Game.handle_input(state.game, :rotate_cw)
+        state
+        #%State{ state | xrot: state.xrot - 0.2 }
       ^wxk_down ->
-        %State{ state | xrot: state.xrot + 0.2 }
+        Extris.Game.handle_input(state.game, :rotate_ccw)
+        state
+        #%State{ state | xrot: state.xrot + 0.2 }
       ^wxk_left ->
-        %State{ state | yrot: state.yrot - 0.2 }
+        Extris.Game.handle_input(state.game, :move_left)
+        state
+        #%State{ state | yrot: state.yrot - 0.2 }
       ^wxk_right ->
-        %State{ state | yrot: state.yrot + 0.2 }
+        Extris.Game.handle_input(state.game, :move_right)
+        state
+        #%State{ state | yrot: state.yrot + 0.2 }
       _ -> state
     end
 
@@ -106,7 +109,6 @@ defmodule Extris.OpenGL.Renderer do
   end
 
   def handle_info(:update, state) do
-    IO.puts "update"
     new_state = :wx.batch(fn() -> render(state) end)
     {:noreply, new_state}
   end
@@ -230,12 +232,11 @@ defmodule Extris.OpenGL.Renderer do
     use Bitwise
     :gl.clear(bor(:wx_const.gl_color_buffer_bit, :wx_const.gl_depth_buffer_bit))
 
-    bitmap =
-      [
-        [ 0, 0, 1, 0, 0 ],
-        [ 0, 0, 1, 0, 0 ],
-        [ 0, 1, 1, 0, 0 ]
-      ]
+    # Get Bitwise from game
+
+    game_state = Extris.Game.get_state(state.game)
+    bitmap = game_state.board
+
     draw_bitmap(bitmap, state)
 
     state
@@ -247,19 +248,23 @@ defmodule Extris.OpenGL.Renderer do
     end
   end
   def draw_row({row, row_num}, state) do
-    IO.puts "drawing row #{row_num} #{inspect row}"
     for {cell, cell_num} <- Enum.with_index(row) do
       draw_cell(row_num, {cell, cell_num}, state)
     end
   end
   def draw_cell(_, {0, _}, _), do: :ok
   def draw_cell(row_num, {cell, cell_num}, state) do
-    IO.puts "drawing cell #{row_num} #{cell_num} #{inspect cell}"
-    :gl.loadIdentity()
-    :gl.translatef(1.4 + (cell_num * 2.2), ((6.0 - row_num) * 2.0) - 7.0, -40.0)
+    set_origin(state)
+    :gl.translatef(1.4 + (cell_num * 2.2), ((6.0 - row_num) * 2.0) - 7.0, -60.0)
     color = brush_for(cell)
     :erlang.apply(:gl, :color3f, color)
     :gl.callList(state.box)
+  end
+
+  def set_origin(state) do
+    :gl.loadIdentity()
+    #{w, h} = :wxWindow.getClientSize(state.parent)
+    :gl.translatef(-10, 10, 0)
   end
 
   def brush_for(n) when is_integer(n) do

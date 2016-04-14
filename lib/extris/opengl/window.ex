@@ -40,7 +40,6 @@ defmodule Extris.OpenGL.Window do
     {:noreply, state}
   end
   def handle_info(msg, state) do
-    IO.puts "Info: #{inspect msg}"
     {:noreply, state}
   end
 
@@ -57,12 +56,10 @@ defmodule Extris.OpenGL.Window do
     {:stop, :normal, state}
   end
   def handle_call(msg, _from, state) do
-    IO.puts "Call: #{inspect msg}"
     {:reply, :ok, state}
   end
 
   def handle_event(wx(event: wxClose()), state) do
-    IO.puts "#{inspect self} Closing window"
     :ok = :wxFrame.setStatusText(state.win, "Closing...", [])
     {:stop, :normal, state}
   end
